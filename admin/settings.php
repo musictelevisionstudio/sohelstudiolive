@@ -1,36 +1,21 @@
 <?php
-/* File: admin/settings.php - FULLY DETAILED & UPDATED */
 session_start();
 require_once '../config/db.php';
 $conn->set_charset("utf8mb4");
 
-// ১. সিকিউরিটি চেক
-if (!isset($_SESSION['admin_id'])) { 
-    header("Location: login.php"); 
-    exit(); 
-}
+if (!isset($_SESSION['admin_id'])) { header("Location: login.php"); exit(); }
 
-// ২. আপডেট হ্যান্ডলিং
+$message = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ad_status = isset($_POST['force_ad']) ? 1 : 0;
     $notice = $_POST['app_notice'];
     $whatsapp = $_POST['whatsapp'];
 
-    $stmt = $conn->prepare("UPDATE site_settings SET force_ad_status=?, app_notice=?, admin_whatsapp=?, updated_at=CURRENT_TIMESTAMP WHERE id=1");
+    $stmt = $conn->prepare("UPDATE site_settings SET force_ad_status=?, app_notice=?, admin_whatsapp=? WHERE id=1");
     $stmt->bind_param("iss", $ad_status, $notice, $whatsapp);
-    
-    if ($stmt->execute()) {
-        $_SESSION['msg'] = "SUCCESS: SETTINGS UPDATED SUCCESSFULLY!";
-    } else {
-        $_SESSION['msg'] = "ERROR: FAILED TO UPDATE SETTINGS.";
-    }
-    
-    // রিডাইরেক্ট করে মেসেজ দেখানো
-    header("Location: settings.php");
-    exit();
+    if ($stmt->execute()) $message = "Settings Updated Successfully!";
 }
 
-// ৩. ডাটা ফেচিং
 $settings = $conn->query("SELECT * FROM site_settings WHERE id=1")->fetch_assoc();
 ?>
 <!DOCTYPE html>
@@ -47,7 +32,7 @@ $settings = $conn->query("SELECT * FROM site_settings WHERE id=1")->fetch_assoc(
         .form-label { color: gold; font-size: 16px; font-weight: bold; }
         .form-control { background: #222 !important; color: #fff !important; border: 1px solid #444 !important; padding: 12px; }
         .btn-warning { font-size: 18px; font-weight: bold; padding: 12px; }
-        .msg-alert { background: gold; color: #000; font-weight: bold; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .btn-outline-light { font-size: 16px; padding: 10px; }
     </style>
 </head>
 <body>
@@ -55,28 +40,24 @@ $settings = $conn->query("SELECT * FROM site_settings WHERE id=1")->fetch_assoc(
 <div class="container full-container">
     <h2>SITE SETTINGS</h2>
     
-    <?php if(isset($_SESSION['msg'])): ?>
-        <div class="msg-alert">
-            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
-        </div>
-    <?php endif; ?>
+    <?php if($message) echo "<div class='alert alert-success text-center'>$message</div>"; ?>
     
     <form method="POST">
         <div class="mb-4">
             <label class="form-label">Force Ad Status (On/Off)</label>
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" name="force_ad" style="transform: scale(1.5);" <?php echo ($settings && $settings['force_ad_status'] == 1) ? 'checked' : ''; ?>>
+                <input class="form-check-input" type="checkbox" name="force_ad" style="transform: scale(1.5);" <?php echo $settings['force_ad_status'] ? 'checked' : ''; ?>>
             </div>
         </div>
         
         <div class="mb-4">
             <label class="form-label">App Notice (Marquee Text)</label>
-            <textarea name="app_notice" class="form-control" rows="5"><?php echo htmlspecialchars($settings ? $settings['app_notice'] : ''); ?></textarea>
+            <textarea name="app_notice" class="form-control" rows="5"><?php echo htmlspecialchars($settings['app_notice']); ?></textarea>
         </div>
         
         <div class="mb-4">
             <label class="form-label">Admin WhatsApp</label>
-            <input type="text" name="whatsapp" class="form-control" value="<?php echo htmlspecialchars($settings ? $settings['admin_whatsapp'] : ''); ?>">
+            <input type="text" name="whatsapp" class="form-control" value="<?php echo htmlspecialchars($settings['admin_whatsapp']); ?>">
         </div>
         
         <button type="submit" class="btn btn-warning w-100">SAVE SETTINGS</button>
