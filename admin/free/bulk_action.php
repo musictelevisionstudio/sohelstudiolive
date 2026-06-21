@@ -1,8 +1,10 @@
+
 <?php
-/* File: admin/free/bulk_action.php - MASTER UPDATED */
+/* File: admin/free/bulk_action.php - FINAL MASTER VERSION */
 session_start();
 require_once '../../config/db.php';
 
+// লগইন চেক
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../login.php");
     exit();
@@ -26,23 +28,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // সব চ্যানেলের আইডি সিলেকশন
         $res = $conn->query("SELECT id FROM channels ORDER BY channel_order ASC, id ASC");
         
-        $stmt = $conn->prepare("UPDATE channels SET channel_order = ? WHERE id = ?");
-        
-        while($row = $res->fetch_assoc()) {
-            $stmt->bind_param("ii", $order, $row['id']);
-            $stmt->execute();
-            $order++;
+        if ($res) {
+            $stmt = $conn->prepare("UPDATE channels SET channel_order = ? WHERE id = ?");
+            while($row = $res->fetch_assoc()) {
+                $stmt->bind_param("ii", $order, $row['id']);
+                $stmt->execute();
+                $order++;
+            }
+            $stmt->close();
+            $_SESSION['msg'] = "SUCCESS: CHANNELS RE-SORTED.";
         }
-        $stmt->close();
-        $_SESSION['msg'] = "SUCCESS: CHANNELS RE-SORTED.";
     }
     
+    // কাজ শেষে চ্যানেলস লিস্ট পেজে রিটার্ন পাঠানো
     header("Location: channels.php");
     exit();
 } else {
-    // সরাসরি এক্সেস করলে ফেরত পাঠান
+    // পোস্ট মেথড ছাড়া এক্সেস করলে সরাসরি রিডাইরেক্ট
     header("Location: channels.php");
     exit();
 }
 ?>
-
