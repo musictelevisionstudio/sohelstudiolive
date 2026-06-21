@@ -1,117 +1,89 @@
 <?php
-/* File: admin/free/edit_channels.php - UPDATED WITH ORDER NUMBER */
-ob_start();
+/* File: admin/free/edit_channels.php - SUCCESS MESSAGE INTEGRATED */
 session_start();
 require_once '../../config/db.php';
 $conn->set_charset("utf8mb4");
 
 if (!isset($_SESSION['admin_id'])) { header("Location: ../login.php"); exit(); }
 $id = intval($_GET['id']);
+$msg = ""; // মেসেজ ভেরিয়েবল
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // অর্ডার নাম্বার আপডেট করার জন্য লজিক ঠিক রাখা হয়েছে
-    $update = $conn->prepare("UPDATE channels SET channel_name=?, channel_url=?, status=?, channel_order=?, ticker_text=?, ticker_enabled=?, ticker_speed=?, ad_url=?, ad_enabled=?, ad_duration=?, live_text=? WHERE id=?");
+    $update = $conn->prepare("UPDATE channels SET channel_name=?, channel_url=?, channel_order=?, ticker_text=?, ticker_enabled=?, ticker_speed=?, live_text=?, live_animation=?, live_enabled=?, ad_url=?, ad_duration=?, ad_enabled=?, ad_type=?, status=? WHERE id=?");
     
-    $update->bind_param("ssiisssisisi", 
-        $_POST['channel_name'], $_POST['channel_url'], $_POST['status'], $_POST['channel_order'], 
+    $update->bind_param("ssisisiisiiisii", 
+        $_POST['channel_name'], $_POST['channel_url'], $_POST['channel_order'], 
         $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], 
-        $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ad_duration'], $_POST['live_text'], $id
+        $_POST['live_text'], $_POST['live_animation'], $_POST['live_enabled'], 
+        $_POST['ad_url'], $_POST['ad_duration'], $_POST['ad_enabled'], $_POST['ad_type'], 
+        $_POST['status'], $id
     );
     
-    if ($update->execute()) { header("Location: channels.php?msg=updated"); exit(); }
+    if ($update->execute()) {
+        $msg = "<div class='alert alert-success text-center'>চ্যানেল সফলভাবে আপডেট হয়েছে!</div>";
+    } else {
+        $msg = "<div class='alert alert-danger text-center'>আপডেট ব্যর্থ হয়েছে!</div>";
+    }
 }
 
 $stmt = $conn->prepare("SELECT * FROM channels WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $channel = $stmt->get_result()->fetch_assoc();
-ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
     <title>Edit Channel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 10px; }
-        .app-container { max-width: 600px; margin: auto; }
-        .section-box { border: 1px solid gold; padding: 15px; border-radius: 10px; margin-bottom: 15px; background: #111; }
-        .section-title { color: gold; font-weight: bold; font-size: 16px; margin-bottom: 10px; display: block; text-align: center; }
-        .form-control, .form-select { background: #222; border: 1px solid #444; color: #fff; margin-bottom: 10px; }
-        label { color: #ccc; font-size: 13px; margin-bottom: 2px; }
-        .btn-main { background: gold; color: #000; font-weight: bold; width: 100%; padding: 12px; border: none; border-radius: 5px; }
+        body { background: #000; color: #fff; padding: 20px; }
+        .edit-container { max-width: 600px; margin: auto; border: 3px solid gold; padding: 25px; border-radius: 20px; background: #111; }
+        .form-control, .form-select { background: #222 !important; border: 1px solid #555 !important; color: #fff !important; margin-bottom: 15px; }
+        label { color: gold; font-weight: bold; }
+        .btn-gold { background: gold; color: #000; font-weight: bold; width: 100%; font-size: 20px; }
     </style>
 </head>
 <body>
-
-<div class="app-container">
-    <a href="channels.php" class="btn btn-outline-secondary btn-sm mb-2">← Back</a>
+<div class="edit-container">
+    <a href="channels.php" class="text-warning">← Back</a>
+    <h3 class="text-warning text-center mb-4">EDIT CHANNEL</h3>
     
+    <?php echo $msg; ?>
+
     <form method="POST">
-        <div class="section-box">
-            <span class="section-title">চ্যানেল ইনফরমেশন</span>
-            <label>চ্যানেল নাম</label>
-            <input type="text" name="channel_name" class="form-control" value="<?php echo htmlspecialchars($channel['channel_name']); ?>" required>
-            <label>চ্যানেল লিঙ্ক</label>
-            <input type="text" name="channel_url" class="form-control" value="<?php echo htmlspecialchars($channel['channel_url']); ?>" required>
-            
-            <label>অর্ডার নম্বর (0, 1, 5 ইত্যাদি)</label>
-            <input type="number" name="channel_order" class="form-control" value="<?php echo htmlspecialchars($channel['channel_order']); ?>" placeholder="অর্ডার লিখুন">
+        <div class="row">
+            <div class="col-md-6"><label>Name</label><input type="text" name="channel_name" class="form-control" value="<?php echo htmlspecialchars($channel['channel_name']); ?>" required></div>
+            <div class="col-md-6"><label>Order</label><input type="number" name="channel_order" class="form-control" value="<?php echo $channel['channel_order']; ?>"></div>
         </div>
-
-        <div class="section-box">
-            <span class="section-title">হেডলাইন সেটিং</span>
-            <label>হেডলাইন টেক্সট</label>
-            <input type="text" name="ticker_text" class="form-control" value="<?php echo htmlspecialchars($channel['ticker_text']); ?>">
-            <div class="row">
-                <div class="col-6">
-                    <label>হেডলাইন স্ট্যাটাস</label>
-                    <select name="ticker_enabled" class="form-select">
-                        <option value="1" <?php echo ($channel['ticker_enabled'] == 1) ? 'selected' : ''; ?>>Show</option>
-                        <option value="0" <?php echo ($channel['ticker_enabled'] == 0) ? 'selected' : ''; ?>>Hide</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <label>স্পিড (10-100)</label>
-                    <input type="number" name="ticker_speed" class="form-control" value="<?php echo htmlspecialchars($channel['ticker_speed']); ?>">
-                </div>
-            </div>
-        </div>
-
-        <div class="section-box">
-            <span class="section-title">লাইভ বাটন সেটিং</span>
-            <label>লাইভ টেক্সট</label>
-            <input type="text" name="live_text" class="form-control" value="<?php echo htmlspecialchars($channel['live_text']); ?>">
-            <label>লাইভ স্ট্যাটাস</label>
-            <select name="status" class="form-select">
-                <option value="1" <?php echo ($channel['status'] == 1) ? 'selected' : ''; ?>>Active</option>
-                <option value="0" <?php echo ($channel['status'] == 0) ? 'selected' : ''; ?>>Inactive</option>
-            </select>
-        </div>
-
-        <div class="section-box">
-            <span class="section-title">অ্যাডভার্টাইজ সেটিং</span>
-            <label>অ্যাড লিঙ্ক</label>
-            <input type="text" name="ad_url" class="form-control" value="<?php echo htmlspecialchars($channel['ad_url']); ?>">
-            <div class="row">
-                <div class="col-6">
-                    <label>টাইম (সেকেন্ড)</label>
-                    <input type="number" name="ad_duration" class="form-control" value="<?php echo htmlspecialchars($channel['ad_duration']); ?>">
-                </div>
-                <div class="col-6">
-                    <label>অ্যাড স্ট্যাটাস</label>
-                    <select name="ad_enabled" class="form-select">
-                        <option value="1" <?php echo ($channel['ad_enabled'] == 1) ? 'selected' : ''; ?>>Active</option>
-                        <option value="0" <?php echo ($channel['ad_enabled'] == 0) ? 'selected' : ''; ?>>Inactive</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+        <label>URL</label><input type="text" name="channel_url" class="form-control" value="<?php echo htmlspecialchars($channel['channel_url']); ?>">
         
-        <button type="submit" class="btn btn-main mb-4">সম্পূর্ণ সেভ করুন</button>
+        <div class="row">
+            <div class="col-md-4"><label>Live Text</label><input type="text" name="live_text" class="form-control" value="<?php echo htmlspecialchars($channel['live_text']); ?>"></div>
+            <div class="col-md-4"><label>Animation</label><select name="live_animation" class="form-select"><option value="pulse" <?php if($channel['live_animation']=='pulse') echo 'selected';?>>Pulse</option><option value="blink" <?php if($channel['live_animation']=='blink') echo 'selected';?>>Blink</option></select></div>
+            <div class="col-md-4"><label>Live Status</label><select name="live_enabled" class="form-select"><option value="1" <?php if($channel['live_enabled']==1) echo 'selected';?>>Show</option><option value="0" <?php if($channel['live_enabled']==0) echo 'selected';?>>Hide</option></select></div>
+        </div>
+
+        <label>Ticker Text</label><input type="text" name="ticker_text" class="form-control" value="<?php echo htmlspecialchars($channel['ticker_text']); ?>">
+        
+        <div class="row">
+            <div class="col-md-6"><label>Ticker Speed</label><select name="ticker_speed" class="form-select"><?php for($s=10;$s<=100;$s+=10) echo "<option value='$s' ".($channel['ticker_speed']==$s?'selected':'').">$s</option>"; ?></select></div>
+            <div class="col-md-6"><label>Ticker Status</label><select name="ticker_enabled" class="form-select"><option value="1" <?php if($channel['ticker_enabled']==1) echo 'selected';?>>Show</option><option value="0" <?php if($channel['ticker_enabled']==0) echo 'selected';?>>Hide</option></select></div>
+        </div>
+
+        <label>Ad URL</label><input type="text" name="ad_url" class="form-control" value="<?php echo htmlspecialchars($channel['ad_url']); ?>">
+        
+        <div class="row">
+            <div class="col-md-4"><label>Ad Duration</label><select name="ad_duration" class="form-select"><?php for($i=5;$i<=60;$i+=5) echo "<option value='$i' ".($channel['ad_duration']==$i?'selected':'').">$i Sec</option>"; ?></select></div>
+            <div class="col-md-4"><label>Ad Type</label><select name="ad_type" class="form-select"><option value="short" <?php if($channel['ad_type']=='short') echo 'selected';?>>Short</option><option value="full" <?php if($channel['ad_type']=='full') echo 'selected';?>>Full</option></select></div>
+            <div class="col-md-4"><label>Ad Status</label><select name="ad_enabled" class="form-select"><option value="1" <?php if($channel['ad_enabled']==1) echo 'selected';?>>Active</option><option value="0" <?php if($channel['ad_enabled']==0) echo 'selected';?>>Inactive</option></select></div>
+        </div>
+
+        <label>Status</label><select name="status" class="form-select"><option value="1" <?php if($channel['status']==1) echo 'selected';?>>Active</option><option value="0" <?php if($channel['status']==0) echo 'selected';?>>Inactive</option></select>
+        
+        <button type="submit" class="btn btn-gold py-2">UPDATE CHANNEL</button>
     </form>
 </div>
-
 </body>
 </html>
