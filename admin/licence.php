@@ -1,14 +1,22 @@
 <?php
-/* File: admin/licence.php - FINAL WORKING VERSION */
+/* File: admin/licence.php - FIXED HEADER ISSUE */
+ob_start(); // আউটপুট বাফারিং অন করলাম যাতে Header এরর না আসে
 session_start();
 require_once '../config/db.php';
+
+// ডাটাবেস ক্যারেক্টার সেট
 $conn->set_charset("utf8mb4");
 
-if (!isset($_SESSION['admin_id'])) { header("Location: login.php"); exit(); }
+// লগইন চেক
+if (!isset($_SESSION['admin_id'])) { 
+    header("Location: login.php"); 
+    exit(); 
+}
 
-// Action হ্যান্ডলিং
+// Action হ্যান্ডলিং (আউটপুট বাফারিংয়ের জন্য এটি একদম নিরাপদ)
 if(isset($_GET['action']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
+    
     if($_GET['action'] == 'toggle') {
         $new_status = (isset($_GET['current']) && $_GET['current'] == 1) ? 0 : 1;
         $stmt = $conn->prepare("UPDATE devices SET status = ? WHERE id = ?");
@@ -27,12 +35,14 @@ if(isset($_GET['action']) && isset($_GET['id'])) {
     exit;
 }
 
+// ডাটা ফেচিং
 $search = isset($_GET['search']) ? "%" . $conn->real_escape_string($_GET['search']) . "%" : null;
 $query = $search ? "SELECT * FROM devices WHERE device_id LIKE ? OR name LIKE ? ORDER BY id DESC" : "SELECT * FROM devices ORDER BY id DESC";
 $stmt = $conn->prepare($query);
 if ($search) { $stmt->bind_param("ss", $search, $search); }
 $stmt->execute();
 $result = $stmt->get_result();
+ob_end_flush(); // বাফার শেষ করলাম
 ?>
 <!DOCTYPE html>
 <html lang="bn">
@@ -121,4 +131,3 @@ $result = $stmt->get_result();
 </script>
 </body>
 </html>
-
