@@ -1,5 +1,5 @@
 <?php
-/* File: admin/verify_otp.php */
+/* File: admin/verify_otp.php - FINAL UPDATED */
 session_start();
 // মেথড চেক করা
 $method = isset($_SESSION['reset_method']) ? ucfirst($_SESSION['reset_method']) : 'WhatsApp/Email';
@@ -18,12 +18,21 @@ $method = isset($_SESSION['reset_method']) ? ucfirst($_SESSION['reset_method']) 
         .btn-gold { background: gold; color: #000; font-weight: bold; width: 100%; margin-top: 10px; padding: 12px; }
         h2 { color: gold; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
         p { text-align: center; font-size: 0.9rem; color: #ccc; }
+        .msg-alert { background: #333; color: #ffc107; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 13px; border: 1px solid #ffc107; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>VERIFY OTP</h2>
+    
+    <!-- সেশন মেসেজ দেখানোর স্থান -->
+    <?php if(isset($_SESSION['msg'])): ?>
+        <div class="msg-alert">
+            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
+        </div>
+    <?php endif; ?>
+
     <p>Enter the 6-digit code sent to your <b><?php echo $method; ?></b>.</p>
     <form action="check_otp_logic.php" method="POST">
         <div class="mb-3">
@@ -38,4 +47,3 @@ $method = isset($_SESSION['reset_method']) ? ucfirst($_SESSION['reset_method']) 
 
 </body>
 </html>
-
