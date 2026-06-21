@@ -151,7 +151,6 @@
                 if(lastChannel >= channels.length){ lastChannel = 0; }
                 playChannel(lastChannel);
             }
-            if(data.app_notice) { document.getElementById('headline').innerText = data.app_notice; }
         } catch(e) { console.log("Fetch Error"); }
     }
 
@@ -166,7 +165,7 @@
         const headlineDiv = document.getElementById('headline');
         headlineDiv.innerText = ch.ticker_text || "Welcome!";
         headlineDiv.style.animationDuration = (ch.ticker_speed || 40) + 's';
-        document.getElementById('liveBtn').innerText = ch.live_text || "LIVE";
+        document.getElementById('liveBtn').innerText = ch.live_button_text || "LIVE";
 
         showNameAuto(ch.name);
 
