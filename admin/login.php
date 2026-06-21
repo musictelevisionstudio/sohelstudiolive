@@ -1,5 +1,5 @@
 <?php
-/* File: admin/login.php */
+/* File: admin/login.php - FINAL UPDATED */
 session_start();
 ?>
 <!DOCTYPE html>
@@ -18,12 +18,21 @@ session_start();
         .btn-gold { background: gold; color: #000; font-weight: bold; padding: 12px; width: 100%; border-radius: 8px; border: none; font-size: 1.1rem; }
         .btn-gold:hover { background: #ffd700; transform: scale(1.02); transition: 0.3s; }
         h2 { color: gold; text-align: center; margin-bottom: 30px; letter-spacing: 2px; }
+        .msg-alert { background: #333; color: #ffc107; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 13px; border: 1px solid #ffc107; }
     </style>
 </head>
 <body>
 
 <div class="login-card">
     <h2>ADMIN LOGIN</h2>
+    
+    <!-- সেশন মেসেজ দেখানোর স্থান -->
+    <?php if(isset($_SESSION['msg'])): ?>
+        <div class="msg-alert">
+            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
+        </div>
+    <?php endif; ?>
+
     <form action="login_process.php" method="POST">
         <div class="mb-4">
             <label class="form-label">Username, Email, or Phone</label>
@@ -35,6 +44,7 @@ session_start();
         </div>
         <button type="submit" class="btn btn-gold">LOGIN NOW</button>
     </form>
+    
     <div class="text-center mt-4">
         <a href="forgot_password.php" style="color: gold; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
     </div>
@@ -42,4 +52,3 @@ session_start();
 
 </body>
 </html>
-
