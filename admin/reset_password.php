@@ -1,5 +1,6 @@
+
 <?php
-/* File: admin/reset_password.php */
+/* File: admin/reset_password.php - FINAL UPDATED */
 session_start();
 
 // শুধুমাত্র ওটিপি ভেরিফাই হওয়া ইউজারই এখানে আসতে পারবে
@@ -23,12 +24,21 @@ if (!isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true) {
         .btn-gold { background: gold; color: #000; font-weight: bold; width: 100%; margin-top: 10px; padding: 12px; }
         .btn-gold:hover { background: #ffd700; }
         h2 { color: gold; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+        .msg-alert { background: #333; color: #ff4444; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 12px; border: 1px solid #ff4444; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>NEW PASSWORD</h2>
+    
+    <!-- সেশন মেসেজ দেখানোর স্থান -->
+    <?php if(isset($_SESSION['msg'])): ?>
+        <div class="msg-alert">
+            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
+        </div>
+    <?php endif; ?>
+
     <form action="update_password_logic.php" method="POST">
         <div class="mb-3">
             <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
@@ -42,4 +52,3 @@ if (!isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true) {
 
 </body>
 </html>
-
