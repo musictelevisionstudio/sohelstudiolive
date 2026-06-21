@@ -1,5 +1,5 @@
 <?php
-/* File: admin/free/delete_channels.php - FINAL UPDATED */
+/* File: admin/free/delete_channels.php - FINAL MASTER VERSION */
 session_start();
 require_once '../../config/db.php';
 
@@ -13,23 +13,21 @@ if (!isset($_SESSION['admin_id'])) {
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $id = intval($_GET['id']);
     
-    // ডিলিট করার আগে নিশ্চিত হোন যে, এটি ডাটাবেজের সাথে সঠিকভাবে কানেক্টেড
+    // ডাটাবেস থেকে ডিলিট অপারেশন
     $stmt = $conn->prepare("DELETE FROM channels WHERE id = ?");
     $stmt->bind_param("i", $id);
     
     if ($stmt->execute()) {
-        // ডিলিট সফল হলে সাকসেস মেসেজসহ রিডাইরেক্ট
-        header("Location: channels.php?msg=deleted");
+        // সফলভাবে ডিলিট হলে সেশন মেসেজ সেট করা
+        $_SESSION['msg'] = "SUCCESS: CHANNEL DELETED.";
     } else {
-        // এরর হলে মেসেজসহ রিডাইরেক্ট
-        header("Location: channels.php?msg=error");
+        // এরর হলে সেশন মেসেজ সেট করা
+        $_SESSION['msg'] = "ERROR: FAILED TO DELETE CHANNEL.";
     }
     $stmt->close();
-    exit();
-} else {
-    // আইডি প্যারামিটার না থাকলে লিস্ট পেজে পাঠিয়ে দিন
-    header("Location: channels.php");
-    exit();
 }
-?>
 
+// ৩. সবশেষে লিস্ট পেজে পাঠিয়ে দেওয়া
+header("Location: channels.php");
+exit();
+?>
