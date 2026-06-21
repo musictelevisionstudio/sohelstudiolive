@@ -2,19 +2,20 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .container { background: #111; padding: 25px; border-radius: 15px; border: 1px solid gold; width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: gold; margin-bottom: 20px; font-size: 20px; }
-        .info-group { text-align: left; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .info-group strong { color: gold; display: block; font-size: 12px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold; }
-        .btn-edit { background: gold; color: #000; }
+        body { background: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); max-width: 400px; width: 100%; text-align: center; }
+        h2 { color: #1565d8; margin-bottom: 20px; }
+        .info-group { text-align: left; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .info-group strong { color: #888; display: block; font-size: 0.85em; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-edit { background: #1565d8; color: #fff; }
         .btn-save { background: #25D366; color: #fff; }
         .btn-close { background: #444; color: #fff; margin-top: 15px; }
+        button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -50,6 +51,7 @@
     function loadProfile() {
         const deviceId = window.parent.myDeviceId;
         if(!deviceId) return;
+        // আপনার API থেকে ডাটাবেসের কলাম অনুযায়ী ডাটা লোড হবে
         fetch('channels_api.php?get_profile=true&did=' + encodeURIComponent(deviceId), {cache: 'no-store'})
             .then(res => res.json())
             .then(p => {
@@ -80,7 +82,7 @@
         btn.innerText = "সেভ হচ্ছে...";
         btn.disabled = true;
         
-        const data = new FormData();
+        const data = new URLSearchParams();
         data.append('did', window.parent.myDeviceId);
         data.append('name', document.getElementById('name').value);
         data.append('fname', document.getElementById('fname').value);
@@ -95,16 +97,16 @@
             btn.innerText = "সেভ করুন";
             btn.disabled = false;
             if(res.status === "success") {
-                alert('সফলভাবে আপডেট হয়েছে!');
+                alert('তথ্য সফলভাবে আপডেট হয়েছে!');
                 loadProfile();
                 toggleEdit(false);
             } else {
-                alert('ব্যর্থ: ' + (res.db_error || 'Unknown Error'));
+                alert('আপডেট ব্যর্থ: ' + (res.db_error || 'Unknown Error'));
             }
         }).catch(() => {
             btn.innerText = "সেভ করুন";
             btn.disabled = false;
-            alert('সার্ভার এরর!');
+            alert('সার্ভার এরর, পুনরায় চেষ্টা করুন!');
         });
     }
 
