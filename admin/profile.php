@@ -1,6 +1,4 @@
-
 <?php
-/* File: admin/profile_edit.php - FINAL UPDATED & SYNCED */
 session_start();
 require_once '../config/db.php';
 $conn->set_charset("utf8mb4");
@@ -11,26 +9,24 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 $admin_id = $_SESSION['admin_id'];
+$message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $full_name = $_POST['full_name'];
     $username  = $_POST['username'];
     $email     = $_POST['email'];
     $phone     = $_POST['phone_number'];
-    $password  = $_POST['new_password'];
+    $password  = $_POST['new_password']; // সরাসরি পাসওয়ার্ড আপডেট
     
-    // ডাটাবেসে আপডেট করা
+    // সুরক্ষিতভাবে আপডেট করা
     $stmt = $conn->prepare("UPDATE admins SET full_name=?, username=?, email=?, phone_number=?, password=? WHERE id=?");
     $stmt->bind_param("sssssi", $full_name, $username, $email, $phone, $password, $admin_id);
     
     if ($stmt->execute()) {
-        $_SESSION['msg'] = "SUCCESS: PROFILE UPDATED SUCCESSFULLY!";
+        $message = "Profile Updated Successfully!";
     } else {
-        $_SESSION['msg'] = "ERROR: FAILED TO UPDATE PROFILE.";
+        $message = "Error: Could not update profile.";
     }
-    
-    header("Location: profile_edit.php");
-    exit();
 }
 
 // অ্যাডমিন ডাটা নিয়ে আসা
@@ -53,19 +49,13 @@ $admin = $stmt->get_result()->fetch_assoc();
         .btn-gold { background: gold; color: #000; font-weight: bold; border: none; padding: 10px; }
         label { color: gold; font-weight: bold; font-size: 12px; margin-bottom: 5px; }
         h2 { font-size: 20px; text-align: center; color: gold; margin-bottom: 20px; }
-        .msg-alert { background: gold; color: #000; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>EDIT PROFILE</h2>
-    
-    <?php if(isset($_SESSION['msg'])): ?>
-        <div class="msg-alert">
-            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
-        </div>
-    <?php endif; ?>
+    <?php if($message) echo "<div class='alert alert-warning p-2 text-center' style='font-size:12px;'>$message</div>"; ?>
     
     <form method="POST">
         <label>Full Name</label>
