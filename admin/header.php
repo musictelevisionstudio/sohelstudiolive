@@ -1,5 +1,8 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <?php
-/* File: admin/header.php - FULLY SYNCED WITH ADMINS TABLE */
+// File: admin/header.php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,12 +11,10 @@ if (!isset($conn)) {
     require_once '../config/db.php';
 }
 
-// ডিফল্ট মান
-$admin = ['full_name' => 'Admin', 'email' => 'N/A', 'country_code' => '', 'phone_number' => 'N/A'];
+$admin = ['full_name' => 'Admin', 'email' => 'N/A', 'phone_number' => 'N/A'];
 
 if (isset($_SESSION['admin_id'])) {
-    // টেবিলের প্রতিটি কলাম সঠিকভাবে নির্বাচন করা হলো
-    $stmt = $conn->prepare("SELECT full_name, email, country_code, phone_number FROM admins WHERE id = ?");
+    $stmt = $conn->prepare("SELECT full_name, email, phone_number FROM admins WHERE id = ?");
     $stmt->bind_param("i", $_SESSION['admin_id']);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -31,14 +32,11 @@ if (isset($_SESSION['admin_id'])) {
     
     <div style="color:#fff; font-size:0.85rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; border-top: 1px solid #333; padding-top: 10px;">
         <span><i class="fas fa-envelope" style="color:gold;"></i> <?php echo htmlspecialchars($admin['email']); ?></span>
-        <span>
-            <i class="fas fa-phone" style="color:gold;"></i> 
-            <?php echo htmlspecialchars($admin['country_code'] . $admin['phone_number']); ?>
-        </span>
+        <span><i class="fas fa-phone" style="color:gold;"></i> <?php echo htmlspecialchars($admin['phone_number']); ?></span>
     </div>
 
     <div style="margin-top: 12px;">
-        <a href="../logout.php" style="color: #ff4444; font-size: 0.8rem; text-decoration: none; border: 1px solid #ff4444; padding: 3px 10px; border-radius: 4px;">
+        <a href="logout.php" style="color: #ff4444; font-size: 0.8rem; text-decoration: none; border: 1px solid #ff4444; padding: 3px 10px; border-radius: 4px;">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
