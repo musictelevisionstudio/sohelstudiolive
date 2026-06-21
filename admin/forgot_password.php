@@ -1,3 +1,7 @@
+<?php
+/* File: admin/forgot_password.php - FINAL UPDATED */
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,12 +18,21 @@
         .form-control:focus { background: #222; border-color: gold; color: #fff; box-shadow: none; }
         .btn-gold { background: gold; color: #000; font-weight: bold; width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1.1rem; }
         .btn-gold:hover { background: #ffd700; transform: scale(1.02); transition: 0.3s; }
+        .msg-alert { background: #333; color: #ffc107; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 13px; border: 1px solid #ffc107; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>RECOVER ACCESS</h2>
+    
+    <!-- সেশন মেসেজ দেখানোর স্থান -->
+    <?php if(isset($_SESSION['msg'])): ?>
+        <div class="msg-alert">
+            <?php echo $_SESSION['msg']; unset($_SESSION['msg']); ?>
+        </div>
+    <?php endif; ?>
+
     <p>Enter your identity and <b>select your preferred OTP method</b> to receive the verification code.</p>
     
     <form action="send_otp_logic.php" method="POST">
@@ -45,4 +58,3 @@
 
 </body>
 </html>
-
