@@ -1,6 +1,11 @@
+
 <?php
-/* File: admin/logout.php */
+/* File: admin/logout.php - FINAL UPDATED */
 session_start();
+
+// মেসেজটি সেশনে সেভ করে রাখা যাতে লগইন পেজে দেখানো যায়
+session_start();
+$_SESSION['msg'] = "SUCCESS: YOU HAVE BEEN LOGGED OUT SUCCESSFULLY!";
 
 // সমস্ত সেশন ভেরিয়েবল মুছে ফেলা
 $_SESSION = array();
