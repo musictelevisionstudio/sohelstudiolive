@@ -1,5 +1,5 @@
 <?php
-/* File: admin/free/edit_channels.php - FINAL DYNAMIC MASTER - FIXED */
+/* File: admin/free/edit_channels.php - FINAL UPDATED MASTER */
 session_start();
 require_once '../../config/db.php';
 $conn->set_charset("utf8mb4");
@@ -20,15 +20,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare("UPDATE channels SET ticker_text=?, ticker_enabled=?, ticker_speed=?, ticker_direction=? WHERE id=?");
         $stmt->bind_param("sisis", $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], $_POST['ticker_direction'], $id);
     } elseif ($action == 'ads') {
-        // ফিক্সড: এখানে ৬টি কলামের জন্য ৬টি "?" এবং ৬টি ডাটা টাইপ ব্যবহার করা হয়েছে
-        $stmt = $conn->prepare("UPDATE channels SET ad_url=?, ad_enabled=?, ads_status=?, ad_type=?, ad_size=?, ad_duration=? WHERE id=?");
-        $stmt->bind_param("siisiii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ads_status'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
+        // নতুন ড্রপডাউন লজিক অনুযায়ী আপডেট কুয়েরি
+        $stmt = $conn->prepare("UPDATE channels SET ad_url=?, ad_enabled=?, ad_type=?, ad_size=?, ad_duration=? WHERE id=?");
+        $stmt->bind_param("sisiii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
     }
     
     if (isset($stmt)) {
-        if(!$stmt->execute()) {
-            echo "Error: " . $stmt->error; exit();
-        }
+        if(!$stmt->execute()) { echo "Error: " . $stmt->error; exit(); }
     }
     header("Location: edit_channels.php?id=$id&msg=saved"); exit();
 }
@@ -39,7 +37,6 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Channel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -62,8 +59,6 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
         <input type="text" name="channel_url" class="form-control" value="<?php echo htmlspecialchars($c['channel_url']); ?>">
         <label>Status</label>
         <select name="status" class="form-select"><option value="1" <?php echo ($c['status']==1?'selected':'');?>>Active</option><option value="0" <?php echo ($c['status']==0?'selected':'');?>>Inactive</option></select>
-        <label>Channel Order</label>
-        <input type="number" name="channel_order" class="form-control" value="<?php echo $c['channel_order']; ?>">
         <button type="submit" class="btn btn-gold">UPDATE BASIC</button>
     </form>
 
@@ -71,42 +66,35 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
         <input type="hidden" name="action" value="live">
         <label>Live Display Text</label>
         <input type="text" name="live_text" class="form-control" value="<?php echo htmlspecialchars($c['live_text']); ?>">
-        <label>Animation Style</label>
-        <select name="live_animation" class="form-select">
-            <?php foreach(['pulse','blink','fade','slide','zoom','shake','bounce','flip','rotate','wobble'] as $anim): ?>
-            <option value="<?php echo $anim; ?>" <?php echo ($c['live_animation']==$anim?'selected':''); ?>><?php echo ucfirst($anim);?></option>
-            <?php endforeach; ?>
-        </select>
         <select name="live_enabled" class="form-select"><option value="1" <?php echo ($c['live_enabled']==1?'selected':'');?>>Live ON</option><option value="0" <?php echo ($c['live_enabled']==0?'selected':'');?>>Live OFF</option></select>
         <button type="submit" class="btn btn-gold">UPDATE LIVE</button>
-    </form>
-
-    <form method="POST" class="box">
-        <input type="hidden" name="action" value="ticker">
-        <label>Headline Text</label>
-        <input type="text" name="ticker_text" class="form-control" value="<?php echo htmlspecialchars($c['ticker_text']); ?>">
-        <select name="ticker_enabled" class="form-select">
-            <option value="1" <?php echo ($c['ticker_enabled']==1?'selected':''); ?>>Show Headline</option>
-            <option value="0" <?php echo ($c['ticker_enabled']==0?'selected':''); ?>>Hide Headline</option>
-        </select>
-        <select name="ticker_speed" class="form-select"><?php for($s=10;$s<=100;$s+=10):?><option value="<?php echo $s;?>" <?php echo ($c['ticker_speed']==$s?'selected':'');?>>Speed <?php echo $s;?>%</option><?php endfor;?></select>
-        <select name="ticker_direction" class="form-select"><option value="left" <?php echo ($c['ticker_direction']=='left'?'selected':'');?>>Left</option><option value="right" <?php echo ($c['ticker_direction']=='right'?'selected':'');?>>Right</option></select>
-        <button type="submit" class="btn btn-gold">UPDATE HEADLINE</button>
     </form>
 
     <form method="POST" class="box">
         <input type="hidden" name="action" value="ads">
         <label>Ad URL</label>
         <input type="text" name="ad_url" class="form-control" value="<?php echo htmlspecialchars($c['ad_url']); ?>">
-        <label>Ad Enabled</label>
-        <select name="ad_enabled" class="form-select"><option value="1" <?php echo ($c['ad_enabled']==1?'selected':''); ?>>Ads ON</option><option value="0" <?php echo ($c['ad_enabled']==0?'selected':''); ?>>Ads OFF</option></select>
-        <label>Ads Status</label>
-        <input type="number" name="ads_status" class="form-control" value="<?php echo $c['ads_status']; ?>">
-        <label>Ad Type & Size</label>
-        <input type="text" name="ad_type" class="form-control" value="<?php echo htmlspecialchars($c['ad_type']); ?>">
-        <input type="number" name="ad_size" class="form-control" value="<?php echo $c['ad_size']; ?>">
+        <label>Ad Enable/Disable</label>
+        <select name="ad_enabled" class="form-select">
+            <option value="1" <?php echo ($c['ad_enabled']==1?'selected':''); ?>>Ads ON</option>
+            <option value="0" <?php echo ($c['ad_enabled']==0?'selected':''); ?>>Ads OFF</option>
+        </select>
+        <label>Ad Type</label>
+        <select name="ad_type" class="form-select">
+            <option value="short" <?php echo ($c['ad_type']=='short'?'selected':''); ?>>Short Screen (Vertical)</option>
+            <option value="full" <?php echo ($c['ad_type']=='full'?'selected':''); ?>>Full Screen (Horizontal)</option>
+        </select>
+        <label>Ad Size (%)</label>
+        <select name="ad_size" class="form-select">
+            <option value="100" <?php echo ($c['ad_size']=='100'?'selected':''); ?>>100%</option>
+            <option value="50" <?php echo ($c['ad_size']=='50'?'selected':''); ?>>50%</option>
+        </select>
         <label>Ad Duration</label>
-        <select name="ad_duration" class="form-select"><?php for($i=5;$i<=60;$i+=5):?><option value="<?php echo $i;?>" <?php echo ($c['ad_duration']==$i?'selected':'');?>>Time <?php echo $i;?> Sec</option><?php endfor;?></select>
+        <select name="ad_duration" class="form-select">
+            <?php for($i=5;$i<=60;$i+=5):?>
+            <option value="<?php echo $i;?>" <?php echo ($c['ad_duration']==$i?'selected':'');?>>Time <?php echo $i;?> Sec</option>
+            <?php endfor;?>
+        </select>
         <button type="submit" class="btn btn-gold">UPDATE ADS</button>
     </form>
 </div>
