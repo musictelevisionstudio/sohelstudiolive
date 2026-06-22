@@ -5,46 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Request</title>
     <style>
-        body { 
-            background: #000; 
-            color: #fff; 
-            font-family: sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh;
-        }
-        .container { 
-            width: 100%; 
-            max-width: 400px; 
-            background: #111; 
-            padding: 20px; 
-            border-radius: 10px; 
-            border: 1px solid #333;
-        }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 400px; background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; }
         h2 { text-align: center; color: #fff; margin-bottom: 20px; }
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 8px 0; 
-            background: #222; 
-            border: 1px solid #444; 
-            color: #fff; 
-            border-radius: 5px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            margin-top: 10px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 16px;
-        }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
         .submit-btn { background: #0056b3; color: #fff; }
         .close-btn { background: #ff0000; color: #fff; }
     </style>
@@ -70,10 +35,14 @@
         <button type="submit" class="submit-btn">সাবমিট করুন</button>
     </form>
     
-    <button class="close-btn" onclick="window.parent.location.href='index.php'">বন্ধ করুন</button>
+    <button class="close-btn" onclick="closeSupportWindow()">বন্ধ করুন</button>
 </div>
 
 <script>
+    function closeSupportWindow() {
+        window.parent.closeSupport();
+    }
+
     document.getElementById('supportForm').onsubmit = function(e) {
         e.preventDefault();
         
@@ -89,7 +58,6 @@
 
         const msg = `সাবস্ক্রিপশন রিকোয়েস্ট:\nনাম: ${name}\nবাবা: ${father}\nমা: ${mother}\nঠিকানা: ${address}\nজেলা: ${district}\nপ্যাকেজ: ${package}\nপেমেন্ট মেথড: ${method}\nসেন্ডার নাম্বার: ${number}\nট্রানজেকশন আইডি: ${trxId}`;
 
-        // হোয়াটসঅ্যাপে সরাসরি রিডাইরেক্ট করবে
         window.location.href = "https://wa.me/8801615896688?text=" + encodeURIComponent(msg);
     };
 </script>
