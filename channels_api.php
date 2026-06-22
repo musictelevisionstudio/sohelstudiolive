@@ -1,4 +1,5 @@
 <?php
+/* File: channels_api.php */
 require_once 'config/db.php'; 
 header('Content-Type: application/json');
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -39,24 +40,24 @@ if (!$device || $device['status'] == 0) {
     exit;
 }
 
-// চ্যানেল লিস্ট (সব কলামসহ, যাতে মনিটর স্টেশনের সব তথ্য পায়)
+// চ্যানেল লিস্ট (সব কলামসহ, মনিটর যাতে সব কমান্ড পায়)
 $query = $conn->query("SELECT * FROM channels ORDER BY channel_order ASC");
 $channels = [];
 while($row = $query->fetch_assoc()){ 
     $channels[] = [
         "name"             => $row['channel_name'],
         "url"              => $row['channel_url'],
-        "status"           => $row['status'], // 'true' বা 'false'
-        "ads_status"       => $row['ads_status'],
+        "status"           => $row['status'],
+        "ads_status"       => (int)$row['ads_status'],
         "ticker_text"      => $row['ticker_text'],
-        "ticker_enabled"   => $row['ticker_enabled'],
+        "ticker_enabled"   => (int)$row['ticker_enabled'],
         "ad_url"           => $row['ad_url'],
-        "ad_enabled"       => $row['ad_enabled'],
+        "ad_enabled"       => (int)$row['ad_enabled'],
         "live_text"        => $row['live_text'],
         "ticker_speed"     => (int)$row['ticker_speed'],
         "ad_duration"      => (int)$row['ad_duration'],
         "live_animation"   => $row['live_animation'],
-        "live_enabled"     => $row['live_enabled'],
+        "live_enabled"     => (int)$row['live_enabled'],
         "ticker_direction" => $row['ticker_direction'],
         "ad_type"          => $row['ad_type'],
         "ad_size"          => (int)$row['ad_size']
