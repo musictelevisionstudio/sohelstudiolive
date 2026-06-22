@@ -1,7 +1,7 @@
 <?php
+/* File: channel_api.php - FULLY UPDATED WITH ALL DATABASE COLUMNS */
 require_once 'config/db.php'; 
 header('Content-Type: application/json');
-// ক্যাশ যাতে না ধরে সেই জন্য হেডার
 header("Cache-Control: no-cache, no-store, must-revalidate");
 
 $did = isset($_GET['did']) ? trim($_GET['did']) : '';
@@ -30,30 +30,35 @@ if ($device['status'] != 1) {
 }
 
 $channels = [];
-// আপনার ডাটাবেসের টেবিল স্ট্রাকচারের সাথে মিল রেখে সিলেক্ট কোয়েরি
+// ডাটাবেস থেকে সব কলামসহ তথ্য তোলা হচ্ছে
 $query = $conn->query("SELECT * FROM channels WHERE status = 1 ORDER BY channel_order ASC");
 
 while($row = $query->fetch_assoc()){ 
     $channels[] = [
-        "name"           => $row['channel_name'],
-        "url"            => $row['channel_url'],
-        "status"         => (int)$row['status'],
+        "id"               => (int)$row['id'],
+        "channel_name"     => $row['channel_name'],
+        "channel_url"      => $row['channel_url'],
+        "status"           => (int)$row['status'],
+        "channel_order"    => (int)$row['channel_order'],
         
-        // বিজ্ঞাপন সম্পর্কিত ডাটা
-        "ad_enabled"     => (int)$row['ad_enabled'],
-        "ad_url"         => $row['ad_url'],
-        "ad_duration"    => (int)$row['ad_duration'],
+        // বিজ্ঞাপন সম্পর্কিত কলামগুলো (স্ক্রিনশট অনুযায়ী)
+        "ad_url"           => $row['ad_url'],
+        "ad_enabled"       => (int)$row['ad_enabled'],
+        "ads_status"       => (int)$row['ads_status'],
+        "ad_type"          => $row['ad_type'],
+        "ad_size"          => (int)$row['ad_size'],
+        "ad_duration"      => (int)$row['ad_duration'],
         
-        // লাইভ এবং এনিমেশন সম্পর্কিত ডাটা
-        "live_text"      => $row['live_text'],
-        "live_enabled"   => (int)$row['live_enabled'],
-        "live_animation" => $row['live_animation'],
+        // লাইভ এবং এনিমেশন সম্পর্কিত
+        "live_text"        => $row['live_text'],
+        "live_animation"   => $row['live_animation'],
+        "live_enabled"     => (int)$row['live_enabled'],
         
-        // হেডলাইন বা টিক্কার সম্পর্কিত ডাটা
-        "ticker_text"    => $row['ticker_text'],
-        "ticker_enabled" => (int)$row['ticker_enabled'],
-        "ticker_speed"   => (int)$row['ticker_speed'],
-        "ticker_direction"=> $row['ticker_direction']
+        // হেডলাইন বা টিক্কার সম্পর্কিত
+        "ticker_text"      => $row['ticker_text'],
+        "ticker_enabled"   => (int)$row['ticker_enabled'],
+        "ticker_speed"     => (int)$row['ticker_speed'],
+        "ticker_direction" => $row['ticker_direction']
     ]; 
 }
 
