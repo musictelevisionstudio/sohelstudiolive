@@ -6,15 +6,14 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 $did = isset($_REQUEST['did']) ? trim($_REQUEST['did']) : '';
 if (empty($did)) { echo json_encode(["status" => "error", "message" => "Device ID Required"]); exit; }
 
-// ১. ডিভাইস রেজিস্ট্রেশন (নতুন হলে status 0 নিয়ে ইনসার্ট হবে)
+// --- ১. ডিভাইস অটোমেটিক রেজিস্ট্রেশন ---
 $stmt_check = $conn->prepare("INSERT IGNORE INTO devices (device_id, status, last_visit) VALUES (?, 0, NOW())");
 $stmt_check->bind_param("s", $did);
 $stmt_check->execute();
 
-// লাস্ট ভিজিট টাইম আপডেট
 $conn->prepare("UPDATE devices SET last_visit = NOW() WHERE device_id = ?")->execute([$did]);
 
-// ২. প্রোফাইল লোড (GET)
+// --- ২. প্রোফাইল লোড (GET) ---
 if (isset($_GET['get_profile']) && $_GET['get_profile'] == 'true') {
     $stmt = $conn->prepare("SELECT name, fname, mname, addr, mobile, email FROM devices WHERE device_id = ?");
     $stmt->bind_param("s", $did);
@@ -23,7 +22,7 @@ if (isset($_GET['get_profile']) && $_GET['get_profile'] == 'true') {
     exit;
 }
 
-// ৩. প্রোফাইল আপডেট (POST)
+// --- ৩. প্রোফাইল আপডেট (POST) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare("UPDATE devices SET name=?, fname=?, mname=?, addr=?, mobile=?, email=? WHERE device_id=?");
     $stmt->bind_param("sssssss", $_POST['name'], $_POST['fname'], $_POST['mname'], $_POST['addr'], $_POST['mobile'], $_POST['email'], $did);
@@ -31,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// ৪. স্ট্যাটাস চেক (ডিভাইস অ্যাক্টিভ কি না)
+// --- ৪. স্ট্যাটাস চেক ---
 $stmt_status = $conn->prepare("SELECT status FROM devices WHERE device_id = ?");
 $stmt_status->bind_param("s", $did);
 $stmt_status->execute();
@@ -42,29 +41,27 @@ if (!$device || (int)$device['status'] === 0) {
     exit;
 }
 
-// ৫. চ্যানেল লিস্ট (আপনার টেবিল স্ট্রাকচার অনুযায়ী সব কলামসহ)
+// --- ৫. চ্যানেল লিস্ট (আপনার টেবিল স্ট্রাকচার অনুযায়ী) ---
 $query = $conn->query("SELECT * FROM channels WHERE status = 'true' ORDER BY channel_order ASC");
 $channels = [];
 while($row = $query->fetch_assoc()){ 
     $channels[] = [
         "name"             => $row['channel_name'],
         "url"              => $row['channel_url'],
-        "status"           => $row['status'],
-        "ads_status"       => $row['ads_status'],
+        "ads_status"       => ($row['ads_status'] === 'true'),
         "ticker_text"      => $row['ticker_text'],
-        "ticker_enabled"   => $row['ticker_enabled'],
+        "ticker_enabled"   => ($row['ticker_enabled'] === 'true'),
         "ad_url"           => $row['ad_url'],
-        "ad_enabled"       => $row['ad_enabled'],
+        "ad_enabled"       => ($row['ad_enabled'] === 'true'),
         "live_text"        => $row['live_text'],
         "ticker_speed"     => (int)$row['ticker_speed'],
         "ad_duration"      => (int)$row['ad_duration'],
         "live_animation"   => $row['live_animation'],
-        "live_enabled"     => $row['live_enabled'],
+        "live_enabled"     => ($row['live_enabled'] === 'true'),
         "ticker_direction" => $row['ticker_direction'],
         "ad_type"          => $row['ad_type'],
         "ad_size"          => (int)$row['ad_size']
     ]; 
 }
-
 echo json_encode(["status" => "active", "channels" => $channels]);
 ?>
