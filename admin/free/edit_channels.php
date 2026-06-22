@@ -79,6 +79,11 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
         <input type="hidden" name="action" value="ticker">
         <label>Headline Text (Current: <?php echo htmlspecialchars($c['ticker_text']); ?>)</label>
         <input type="text" name="ticker_text" class="form-control" value="<?php echo htmlspecialchars($c['ticker_text']); ?>">
+        <label>Headline Enable/Disable</label>
+        <select name="ticker_enabled" class="form-select">
+            <option value="1" <?php echo ($c['ticker_enabled']==1?'selected':''); ?>>Show Headline</option>
+            <option value="0" <?php echo ($c['ticker_enabled']==0?'selected':''); ?>>Hide Headline</option>
+        </select>
         <label>Speed (%)</label>
         <select name="ticker_speed" class="form-select"><?php for($s=10;$s<=100;$s+=10):?><option value="<?php echo $s;?>" <?php echo ($c['ticker_speed']==$s?'selected':'');?>>Speed <?php echo $s;?>%</option><?php endfor;?></select>
         <select name="ticker_direction" class="form-select"><option value="left" <?php echo ($c['ticker_direction']=='left'?'selected':'');?>>Left</option><option value="right" <?php echo ($c['ticker_direction']=='right'?'selected':'');?>>Right</option></select>
@@ -89,6 +94,11 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
         <input type="hidden" name="action" value="ads">
         <label>Ad URL</label>
         <input type="text" name="ad_url" class="form-control" value="<?php echo htmlspecialchars($c['ad_url']); ?>">
+        <label>Ad Enable/Disable</label>
+        <select name="ad_enabled" class="form-select">
+            <option value="1" <?php echo ($c['ad_enabled']==1?'selected':''); ?>>Ads ON</option>
+            <option value="0" <?php echo ($c['ad_enabled']==0?'selected':''); ?>>Ads OFF</option>
+        </select>
         <label>Ad Duration (Seconds)</label>
         <select name="ad_duration" class="form-select"><?php for($i=5;$i<=60;$i+=5):?><option value="<?php echo $i;?>" <?php echo ($c['ad_duration']==$i?'selected':'');?>>Time <?php echo $i;?> Sec</option><?php endfor;?></select>
         <button type="submit" class="btn btn-gold">UPDATE ADS</button>
