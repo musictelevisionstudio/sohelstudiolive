@@ -17,12 +17,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare("UPDATE channels SET live_text=?, live_animation=?, live_enabled=? WHERE id=?");
         $stmt->bind_param("ssii", $_POST['live_text'], $_POST['live_animation'], $_POST['live_enabled'], $id);
     } elseif ($action == 'ticker') {
+        // এখানে ticker_speed ইনপুট থেকে মান নেবে
         $stmt = $conn->prepare("UPDATE channels SET ticker_text=?, ticker_enabled=?, ticker_speed=?, ticker_direction=? WHERE id=?");
-        $stmt->bind_param("sisis", $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], $_POST['ticker_direction'], $id);
+        $stmt->bind_param("sisi", $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], $_POST['ticker_direction'], $id);
     } elseif ($action == 'ads') {
-        // স্ক্রিনশট অনুযায়ী সঠিক কলাম বিন্যাস
+        // এখানে ad_duration ইনপুট থেকে মান নেবে
         $stmt = $conn->prepare("UPDATE channels SET ad_url=?, ad_enabled=?, ads_status=?, ad_type=?, ad_size=?, ad_duration=? WHERE id=?");
-        $stmt->bind_param("siisiii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ads_status'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
+        $stmt->bind_param("siisii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ads_status'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
     }
     
     if (isset($stmt)) {
@@ -75,7 +76,7 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
             <input type="hidden" name="action" value="ticker">
             <label>Headline</label><input type="text" name="ticker_text" class="form-control" value="<?php echo htmlspecialchars($c['ticker_text']); ?>">
             <label>Status</label><select name="ticker_enabled" class="form-select"><option value="1" <?php echo ($c['ticker_enabled']==1?'selected':''); ?>>Show</option><option value="0" <?php echo ($c['ticker_enabled']==0?'selected':''); ?>>Hide</option></select>
-            <label>Speed</label><select name="ticker_speed" class="form-select"><?php for($s=10;$s<=100;$s+=10):?><option value="<?php echo $s;?>" <?php echo ($c['ticker_speed']==$s?'selected':'');?>>Speed <?php echo $s;?>%</option><?php endfor;?></select>
+            <label>Speed (Sec)</label><input type="number" name="ticker_speed" class="form-control" value="<?php echo $c['ticker_speed']; ?>">
             <label>Direction</label><select name="ticker_direction" class="form-select"><option value="left" <?php echo ($c['ticker_direction']=='left'?'selected':'');?>>Left</option><option value="right" <?php echo ($c['ticker_direction']=='right'?'selected':'');?>>Right</option></select>
             <button type="submit" class="btn btn-gold">UPDATE HEADLINE</button>
         </form></div>
@@ -86,7 +87,7 @@ $c = $conn->query("SELECT * FROM channels WHERE id = $id")->fetch_assoc();
             <label>Ads Status</label><input type="number" name="ads_status" class="form-control" value="<?php echo $c['ads_status']; ?>">
             <label>Ad Type</label><select name="ad_type" class="form-select"><option value="short" <?php echo ($c['ad_type']=='short'?'selected':''); ?>>Short</option><option value="full" <?php echo ($c['ad_type']=='full'?'selected':''); ?>>Full</option></select>
             <label>Ad Size (%)</label><input type="number" name="ad_size" class="form-control" value="<?php echo $c['ad_size']; ?>">
-            <label>Duration (Sec)</label><select name="ad_duration" class="form-select"><?php for($i=5;$i<=60;$i+=5):?><option value="<?php echo $i;?>" <?php echo ($c['ad_duration']==$i?'selected':'');?>>Time <?php echo $i;?> Sec</option><?php endfor;?></select>
+            <label>Duration (Sec)</label><input type="number" name="ad_duration" class="form-control" value="<?php echo $c['ad_duration']; ?>">
             <button type="submit" class="btn btn-gold">UPDATE ADS</button>
         </form></div>
     </div>
