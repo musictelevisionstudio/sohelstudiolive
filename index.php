@@ -14,7 +14,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 .video-wrap{position:fixed;inset:0;background:#000;z-index:1;}
 #videoPlayer,#youtubeFrame{position:absolute;top:0;left:0;width:100%;height:100%;border:none;z-index:1;}
 #adOverlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);display:none;justify-content:center;align-items:center;}
-#adFrame{width:90%;height:70%;border:2px solid gold;}
+#adFrame{border:2px solid gold;}
 .ad-timer{position:absolute;top:20px;right:20px;color:gold;font-size:20px;font-weight:bold;}
 #profileFrame,#supportFrame{position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;background:#000;display:none;border:none;}
 #volIndicator{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.8);color:gold;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:bold;display:none;}
@@ -89,17 +89,21 @@ function playChannel(i) {
     const c = channels[i];
     if (!c) return;
     
-    // নতুন ডাটাবেস কলাম অনুযায়ী অ্যাড এবং স্ট্যাটাস চেক
-    if ((c.ads_status == 1 || c.ads_status === 'true') && c.ad_enabled !== 'false' && c.ad_url) {
-        showAd(c.ad_url, c.ad_duration || 30);
+    // অ্যাডভার্টাইজ সাইজ এবং ডিউরেশন কমান্ড
+    if (c.ad_enabled == 1 && c.ad_url) {
+        showAd(c.ad_url, c.ad_duration || 30, c.ad_size || 90);
     }
 
+    // হেডলাইন স্পিড ও ডিরেকশন কমান্ড
     const h = document.getElementById('headline');
-    h.innerText = c.ticker_enabled !== 'false' ? c.ticker_text : "";
-    h.style.animationDuration = (c.ticker_speed || 40) + 's';
+    h.innerText = c.ticker_enabled == 1 ? c.ticker_text : "";
+    h.style.animationDuration = (110 - (c.ticker_speed || 40)) + 's';
     h.style.direction = (c.ticker_direction === 'right') ? 'rtl' : 'ltr';
 
-    document.getElementById('liveBtn').innerText = c.live_enabled !== 'false' ? c.live_text : "";
+    // লাইভ এনিমেশন কমান্ড
+    const lb = document.getElementById('liveBtn');
+    lb.innerText = c.live_enabled == 1 ? c.live_text : "LIVE";
+    lb.style.animation = c.live_enabled == 1 ? (c.live_animation + ' 1s infinite') : 'none';
     
     showNameAuto(c.name);
     const isY=c.url.includes('youtube.com')||c.url.includes('youtu.be');
@@ -123,7 +127,18 @@ function playChannel(i) {
     }
 }
 
-function showAd(u,d){const o=document.getElementById('adOverlay'),f=document.getElementById('adFrame'),t=document.getElementById('adTimer');let v=u.split('v=')[1]||u.split('/').pop();if(v.includes('?'))v=v.split('?')[0];f.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0";o.style.display='flex';let l=d;const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000);}
+// আপডেট করা অ্যাড ফাংশন
+function showAd(u, d, s){
+    const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer');
+    f.style.width = s + '%';
+    f.style.height = s + '%';
+    let v=u.split('v=')[1]||u.split('/').pop();if(v.includes('?'))v=v.split('?')[0];
+    f.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0";
+    o.style.display='flex';
+    let l=d;
+    const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000);
+}
+
 function adjustVol(v){video.muted=false;video.volume=Math.min(Math.max(video.volume+v,0),1);document.getElementById('volIndicator').style.display='block';document.getElementById('volIndicator').innerText="VOL: "+Math.round(video.volume*100)+"%";clearTimeout(window.volTimeout);window.volTimeout=setTimeout(()=>{document.getElementById('volIndicator').style.display='none';},1000);}
 function toggleFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen().catch(()=>{});}
 function toggleMenu(){document.getElementById('sideMenu').classList.toggle('active');}
