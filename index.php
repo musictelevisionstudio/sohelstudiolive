@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta name="google-site-verification" content="DZCpf0nB8W2BBNFKLXpo5hSOTT1oHWVPLhxh4jNUIf8" />
-    <!-- আপনার অন্যান্য মেটা ট্যাগ বা টাইটেল এখানে থাকবে -->
-</head>
+    </head>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -238,4 +237,4 @@
     window.onload = fetchData;
 </script>
 </body>
-</html
+</html>
