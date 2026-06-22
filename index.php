@@ -21,7 +21,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 .bottom-info{position:absolute;bottom:0;left:0;width:100%;height:40px;background:#000;display:flex;align-items:center;z-index:500;}
 .live-box{width:70px;height:100%;background:red;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;}
 .ticker-wrap{flex:1;overflow:hidden;padding:0 10px;background:#000;}
-.ticker{white-space:nowrap;color:#fff;font-size:16px;display:inline-block;padding-left:100%;animation:scroll-left linear infinite;}
+.ticker{white-space:nowrap;color:#fff;font-size:16px;display:inline-block;padding-left:100%;}
 @keyframes scroll-left{0%{transform:translateX(0%);}100%{transform:translateX(-100%);}}
 .clock-box{width:140px;height:100%;background:#1565d8;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:11px;}
 .ctrl-left{position:absolute;top:15%;left:10px;z-index:9999;display:flex;flex-direction:column;gap:10px;}
@@ -89,21 +89,18 @@ function playChannel(i) {
     const c = channels[i];
     if (!c) return;
     
-    // অ্যাডভার্টাইজ সাইজ এবং ডিউরেশন কমান্ড
     if (c.ad_enabled == 1 && c.ad_url) {
         showAd(c.ad_url, c.ad_duration || 30, c.ad_size || 90);
     }
 
-    // হেডলাইন স্পিড ও ডিরেকশন কমান্ড
     const h = document.getElementById('headline');
     h.innerText = c.ticker_enabled == 1 ? c.ticker_text : "";
-    h.style.animationDuration = (110 - (c.ticker_speed || 40)) + 's';
+    h.style.animation = c.ticker_enabled == 1 ? `scroll-left ${(110 - (c.ticker_speed || 40))}s linear infinite` : 'none';
     h.style.direction = (c.ticker_direction === 'right') ? 'rtl' : 'ltr';
 
-    // লাইভ এনিমেশন কমান্ড
     const lb = document.getElementById('liveBtn');
     lb.innerText = c.live_enabled == 1 ? c.live_text : "LIVE";
-    lb.style.animation = c.live_enabled == 1 ? (c.live_animation + ' 1s infinite') : 'none';
+    lb.style.animation = c.live_enabled == 1 ? (c.live_animation || 'none') + ' 1s infinite' : 'none';
     
     showNameAuto(c.name);
     const isY=c.url.includes('youtube.com')||c.url.includes('youtu.be');
@@ -127,11 +124,9 @@ function playChannel(i) {
     }
 }
 
-// আপডেট করা অ্যাড ফাংশন
 function showAd(u, d, s){
     const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer');
-    f.style.width = s + '%';
-    f.style.height = s + '%';
+    f.style.width = s + '%'; f.style.height = s + '%';
     let v=u.split('v=')[1]||u.split('/').pop();if(v.includes('?'))v=v.split('?')[0];
     f.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0";
     o.style.display='flex';
