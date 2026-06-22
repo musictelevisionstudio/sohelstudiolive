@@ -1,11 +1,9 @@
 <?php
 require_once 'config/db.php'; 
 header('Content-Type: application/json');
+// ক্যাশ যাতে না ধরে সেই জন্য হেডার
+header("Cache-Control: no-cache, no-store, must-revalidate");
 
-// --- ১. প্রোফাইল আপডেট ও রিড লজিক একই থাকবে ---
-// (আপনার আগের লজিক অনুযায়ী ঠিক আছে)
-
-// --- ২. চ্যানেল লিস্ট এবং ডিভাইস স্ট্যাটাস লজিক (সংশোধিত) ---
 $did = isset($_GET['did']) ? trim($_GET['did']) : '';
 if (empty($did)) {
     echo json_encode(["status" => "error", "message" => "Device ID missing"]);
@@ -32,19 +30,30 @@ if ($device['status'] != 1) {
 }
 
 $channels = [];
-// আপনার ইনডেক্সের সাথে মিল রেখে চ্যানেল লিস্ট তৈরি
+// আপনার ডাটাবেসের টেবিল স্ট্রাকচারের সাথে মিল রেখে সিলেক্ট কোয়েরি
 $query = $conn->query("SELECT * FROM channels WHERE status = 1 ORDER BY channel_order ASC");
 
 while($row = $query->fetch_assoc()){ 
     $channels[] = [
         "name"           => $row['channel_name'],
         "url"            => $row['channel_url'],
-        "ads_status"     => (int)$row['ads_status'], // ইনডেক্সের ad_enabled লজিকের সাথে মিলবে
+        "status"         => (int)$row['status'],
+        
+        // বিজ্ঞাপন সম্পর্কিত ডাটা
+        "ad_enabled"     => (int)$row['ad_enabled'],
         "ad_url"         => $row['ad_url'],
         "ad_duration"    => (int)$row['ad_duration'],
+        
+        // লাইভ এবং এনিমেশন সম্পর্কিত ডাটা
+        "live_text"      => $row['live_text'],
+        "live_enabled"   => (int)$row['live_enabled'],
+        "live_animation" => $row['live_animation'],
+        
+        // হেডলাইন বা টিক্কার সম্পর্কিত ডাটা
         "ticker_text"    => $row['ticker_text'],
+        "ticker_enabled" => (int)$row['ticker_enabled'],
         "ticker_speed"   => (int)$row['ticker_speed'],
-        "live_text"      => $row['live_text']       // ইনডেক্সের liveBtn টেক্সট
+        "ticker_direction"=> $row['ticker_direction']
     ]; 
 }
 
