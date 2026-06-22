@@ -1,6 +1,7 @@
-
 <?php
-/* File: admin/free/bulk_action.php - FINAL MASTER VERSION */
+/* File: admin/free/bulk_action.php - FIXED VERSION */
+// লক্ষ্য করুন: <?php এর আগে কোনো খালি লাইন বা স্পেস নেই।
+ob_start(); // আউটপুট বাফারিং চালু করছি যাতে হেডার এরর না হয়
 session_start();
 require_once '../../config/db.php';
 
@@ -14,18 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = $_POST['action'] ?? '';
     $ids = isset($_POST['ids']) ? array_map('intval', $_POST['ids']) : [];
 
-    // ১. বাল্ক ডিলিট অ্যাকশন
     if ($action == 'delete' && !empty($ids)) {
         $idList = implode(',', $ids);
         $conn->query("DELETE FROM channels WHERE id IN ($idList)");
         $_SESSION['msg'] = "SUCCESS: " . count($ids) . " CHANNELS DELETED.";
     } 
     
-    // ২. অটো-সর্টিং অ্যাকশন (অর্ডার ঠিক করা)
     elseif ($action == 'resort' && isset($_POST['start_number'])) {
         $order = intval($_POST['start_number']);
-        
-        // সব চ্যানেলের আইডি সিলেকশন
         $res = $conn->query("SELECT id FROM channels ORDER BY channel_order ASC, id ASC");
         
         if ($res) {
@@ -40,12 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
-    // কাজ শেষে চ্যানেলস লিস্ট পেজে রিটার্ন পাঠানো
     header("Location: channels.php");
+    ob_end_flush(); // আউটপুট বাফার শেষ
     exit();
 } else {
-    // পোস্ট মেথড ছাড়া এক্সেস করলে সরাসরি রিডাইরেক্ট
     header("Location: channels.php");
+    ob_end_flush();
     exit();
 }
 ?>
