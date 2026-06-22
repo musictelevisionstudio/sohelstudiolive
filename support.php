@@ -1,30 +1,46 @@
-<?php
-require_once 'config/db.php'; 
-header('Content-Type: application/json');
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background: #1a1a1a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
+        button { width: 100%; padding: 10px; background: #1565d8; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>সাপোর্ট সেন্টার</h2>
+        <form id="supportForm">
+            <input type="text" name="name" placeholder="নাম" required>
+            <input type="text" name="father" placeholder="বাবার নাম" required>
+            <input type="text" name="mother" placeholder="মায়ের নাম" required>
+            <input type="text" name="address" placeholder="ঠিকানা" required>
+            <input type="text" name="district" placeholder="জেলা" required>
+            <select name="package">
+                <option value="basic">বেসিক প্যাকেজ</option>
+                <option value="premium">প্রিমিয়াম প্যাকেজ</option>
+            </select>
+            <input type="text" name="paymentMethod" placeholder="পেমেন্ট মেথড (Bkash/Nagad)" required>
+            <input type="text" name="senderNumber" placeholder="আপনার নাম্বার" required>
+            <input type="text" name="trxId" placeholder="ট্রানজেকশন আইডি" required>
+            <button type="submit">সাবমিট করুন</button>
+        </form>
+        <p id="responseMsg" style="text-align:center; margin-top:10px;"></p>
+    </div>
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // ফর্ম থেকে ডাটা গ্রহণ
-    $full_name      = mysqli_real_escape_string($conn, $_POST['name']);
-    $father_name    = mysqli_real_escape_string($conn, $_POST['father']);
-    $mother_name    = mysqli_real_escape_string($conn, $_POST['mother']);
-    $address        = mysqli_real_escape_string($conn, $_POST['address']);
-    $district       = mysqli_real_escape_string($conn, $_POST['district']);
-    $package        = mysqli_real_escape_string($conn, $_POST['package']);
-    $payment_method = mysqli_real_escape_string($conn, $_POST['paymentMethod']);
-    $sender_number  = mysqli_real_escape_string($conn, $_POST['senderNumber']);
-    $trx_id         = mysqli_real_escape_string($conn, $_POST['trxId']);
-
-    // ডাটাবেসে ইনসার্ট করার কুয়েরি
-    $sql = "INSERT INTO subscriptions 
-            (full_name, father_name, mother_name, address, district, package, payment_method, sender_number, trx_id) 
-            VALUES 
-            ('$full_name', '$father_name', '$mother_name', '$address', '$district', '$package', '$payment_method', '$sender_number', '$trx_id')";
-
-    if (mysqli_query($conn, $sql)) {
-        echo json_encode(["status" => "success", "msg" => "সাবস্ক্রিপশন সফল হয়েছে!"]);
-    } else {
-        echo json_encode(["status" => "error", "msg" => "ডাটাবেস এরর: " . mysqli_error($conn)]);
-    }
-    exit;
-}
-?>
+    <script>
+        document.getElementById('supportForm').onsubmit = async function(e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            let res = await fetch('support.php', { method: 'POST', body: formData });
+            let data = await res.json();
+            document.getElementById('responseMsg').innerText = data.msg;
+            if(data.status === 'success') {
+                setTimeout(() => window.parent.closeSupport(), 2000);
+            }
+        };
+    </script>
+</body>
+</html>
