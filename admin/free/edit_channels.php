@@ -11,19 +11,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
     if ($action == 'basic') {
+        // 4টি কলাম + 1টি আইডি = 5টি (ssiii)
         $stmt = $conn->prepare("UPDATE channels SET channel_name=?, channel_url=?, status=?, channel_order=? WHERE id=?");
         $stmt->bind_param("ssiii", $_POST['channel_name'], $_POST['channel_url'], $_POST['status'], $_POST['channel_order'], $id);
     } elseif ($action == 'live') {
+        // 3টি কলাম + 1টি আইডি = 4টি (ssii)
         $stmt = $conn->prepare("UPDATE channels SET live_text=?, live_animation=?, live_enabled=? WHERE id=?");
         $stmt->bind_param("ssii", $_POST['live_text'], $_POST['live_animation'], $_POST['live_enabled'], $id);
     } elseif ($action == 'ticker') {
-        // এখানে ticker_speed ইনপুট থেকে মান নেবে
+        // 4টি কলাম + 1টি আইডি = 5টি (sisii)
         $stmt = $conn->prepare("UPDATE channels SET ticker_text=?, ticker_enabled=?, ticker_speed=?, ticker_direction=? WHERE id=?");
-        $stmt->bind_param("sisi", $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], $_POST['ticker_direction'], $id);
+        $stmt->bind_param("sisii", $_POST['ticker_text'], $_POST['ticker_enabled'], $_POST['ticker_speed'], $_POST['ticker_direction'], $id);
     } elseif ($action == 'ads') {
-        // এখানে ad_duration ইনপুট থেকে মান নেবে
+        // 6টি কলাম + 1টি আইডি = 7টি (siisiii)
         $stmt = $conn->prepare("UPDATE channels SET ad_url=?, ad_enabled=?, ads_status=?, ad_type=?, ad_size=?, ad_duration=? WHERE id=?");
-        $stmt->bind_param("siisii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ads_status'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
+        $stmt->bind_param("siisiii", $_POST['ad_url'], $_POST['ad_enabled'], $_POST['ads_status'], $_POST['ad_type'], $_POST['ad_size'], $_POST['ad_duration'], $id);
     }
     
     if (isset($stmt)) {
