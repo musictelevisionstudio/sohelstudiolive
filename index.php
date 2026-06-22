@@ -234,4 +234,4 @@
     window.onload = fetchData;
 </script>
 </body>
-</html>
+</html
