@@ -14,8 +14,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 .video-wrap{position:fixed;inset:0;background:#000;z-index:1;}
 #videoPlayer,#youtubeFrame{position:absolute;top:0;left:0;width:100%;height:100%;border:none;z-index:1;}
 #adOverlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);display:none;justify-content:center;align-items:center;}
-#adFrame{border:2px solid gold;}
-.ad-timer{position:absolute;top:20px;right:20px;color:gold;font-size:20px;font-weight:bold;}
+#adFrame{border:2px solid gold; pointer-events: none;}
+.ad-timer{position:absolute;top:20px;right:20px;color:gold;font-size:20px;font-weight:bold;z-index:100000;}
+#adBlocker{position:absolute;top:0;left:0;width:100%;height:100%;z-index:100000;background:transparent;}
 #profileFrame,#supportFrame{position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;background:#000;display:none;border:none;}
 #volIndicator{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.8);color:gold;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:bold;display:none;}
 .bottom-info{position:absolute;bottom:0;left:0;width:100%;height:40px;background:#000;display:flex;align-items:center;z-index:500;}
@@ -38,7 +39,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 <iframe id="supportFrame" src="support.php"></iframe>
 <div id="channelDisplay"></div>
 <div id="volIndicator">VOL: 50%</div>
-<div id="adOverlay"><div class="ad-timer" id="adTimer">Ad ends in: --</div><iframe id="adFrame" src="" allow="autoplay; fullscreen"></iframe></div>
+<div id="adOverlay">
+    <div class="ad-timer" id="adTimer">Ad ends in: --</div>
+    <div id="adBlocker"></div>
+    <iframe id="adFrame" src="" allow="autoplay; fullscreen"></iframe>
+</div>
 <div class="video-wrap"><video id="videoPlayer" autoplay playsinline webkit-playsinline></video><iframe id="youtubeFrame" allow="autoplay; fullscreen" style="display:none;"></iframe></div>
 <div class="ctrl-left">
 <button class="ctrl-btn" tabindex="0" onclick="document.getElementById('profileFrame').style.display='block'">PROFILE</button>
@@ -127,8 +132,7 @@ function playChannel(i) {
 function showAd(u, d, s){
     const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer');
     f.style.width = s + '%'; f.style.height = s + '%';
-    let v=u.split('v=')[1]||u.split('/').pop();if(v.includes('?'))v=v.split('?')[0];
-    f.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0";
+    f.src=u;
     o.style.display='flex';
     let l=d;
     const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000);
