@@ -33,6 +33,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 .side-menu{position:absolute;top:0;right:-100%;width:250px;height:100%;background:#1a1a1a;z-index:10000;transition:.3s;overflow-y:auto;}
 .side-menu.active{right:0;}
 .channel-item{padding:15px;border-bottom:1px solid #333;color:#fff;cursor:pointer;}
+
+#adSocialTicker{
+position:absolute;top:0;left:100%;width:max-content;min-width:100%;
+height:35px;line-height:35px;background:rgba(0,0,0,.85);
+color:#FFD700;font-size:16px;font-weight:bold;white-space:nowrap;
+z-index:999999;animation:socialTicker 18s linear infinite;padding:0 30px;
+}
+@keyframes socialTicker{
+from{transform:translateX(0);}
+to{transform:translateX(-200%);}
+}
+
 </style>
 </head>
 <body>
@@ -42,6 +54,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 <div id="volIndicator">VOL: 50%</div>
 <div id="adOverlay">
     <div class="ad-timer" id="adTimer">Ad ends in: --</div>
+    <div id="adSocialTicker">
+        Facebook: facebook.com/sohelfreetv |
+        YouTube: youtube.com/@sohelfreetv |
+        WhatsApp: 01615896688 |
+        Telegram: t.me/sohelfreetv
+    </div>
     <div id="adContainer">
         <div id="adBlocker"></div>
         <iframe id="adFrame" src="" allow="autoplay; fullscreen"></iframe>
