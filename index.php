@@ -148,11 +148,35 @@ function playChannel(i) {
 
 function showAd(u, d, s){
     const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer'), c=document.getElementById('adContainer');
-    c.style.width = s + '%'; c.style.height = s + '%';
-    f.src = u;
+    c.style.width = s + '%';
+    c.style.height = s + '%';
+
+    let adUrl = (u || '').trim();
+
+    if(adUrl.includes('youtube.com/shorts/')){
+        let id = adUrl.split('/shorts/')[1].split('?')[0];
+        adUrl = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+    }else if(adUrl.includes('youtu.be/')){
+        let id = adUrl.split('youtu.be/')[1].split('?')[0];
+        adUrl = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+    }else if(adUrl.includes('youtube.com/watch?v=')){
+        let id = adUrl.split('v=')[1].split('&')[0];
+        adUrl = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+    }
+
+    f.src = adUrl;
     o.style.display='flex';
+
     let l=d;
-    const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000);
+    const i=setInterval(()=>{
+        t.innerText='Ad ends in: '+l+'s';
+        if(l<=0){
+            clearInterval(i);
+            o.style.display='none';
+            f.src='';
+        }
+        l--;
+    },1000);
 }
 
 function adjustVol(v){video.muted=false;video.volume=Math.min(Math.max(video.volume+v,0),1);document.getElementById('volIndicator').style.display='block';document.getElementById('volIndicator').innerText="VOL: "+Math.round(video.volume*100)+"%";clearTimeout(window.volTimeout);window.volTimeout=setTimeout(()=>{document.getElementById('volIndicator').style.display='none';},1000);}
