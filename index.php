@@ -14,10 +14,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 .video-wrap{position:fixed;inset:0;background:#000;z-index:1;}
 #videoPlayer,#youtubeFrame{position:absolute;top:0;left:0;width:100%;height:100%;border:none;z-index:1;}
 #adOverlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);display:none;justify-content:center;align-items:center;}
-#adContainer{position:relative;width:90%;height:90%;background:#000;}
-#adFrame{width:100%;height:100%;border:none;}
-/* এখানে পরিবর্তন: adBlocker সরালাম যাতে ভিডিও প্লে হতে পারে, তবে বিজ্ঞাপন মনিটরের ওপর টাচ করলেও যেন মেইন পেজ নাড়াচাড়া না হয় */
-.ad-timer{position:absolute;top:10px;right:10px;color:gold;font-size:20px;font-weight:bold;z-index:100002;}
+#adContainer{position:relative;display:flex;justify-content:center;align-items:center;}
+#adFrame{border:2px solid gold;z-index:1;}
+#adBlocker{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;background:transparent;}
+.ad-timer{position:absolute;top:20px;right:20px;color:gold;font-size:20px;font-weight:bold;z-index:11;}
 #profileFrame,#supportFrame{position:fixed;top:0;left:0;width:100%;height:100%;z-index:20000;background:#000;display:none;border:none;}
 #volIndicator{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.8);color:gold;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:bold;display:none;}
 .bottom-info{position:absolute;bottom:0;left:0;width:100%;height:40px;background:#000;display:flex;align-items:center;z-index:500;}
@@ -43,7 +43,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 <div id="adOverlay">
     <div class="ad-timer" id="adTimer">Ad ends in: --</div>
     <div id="adContainer">
-        <iframe id="adFrame" src="" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+        <div id="adBlocker"></div>
+        <iframe id="adFrame" src="" allow="autoplay; fullscreen"></iframe>
     </div>
 </div>
 <div class="video-wrap"><video id="videoPlayer" autoplay playsinline webkit-playsinline></video><iframe id="youtubeFrame" allow="autoplay; fullscreen" style="display:none;"></iframe></div>
@@ -64,11 +65,85 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:san
 <script>
 document.addEventListener('keydown',function(e){if(e.keyCode===13){document.activeElement.click();}});
 let currentChannel=0,channels=[],hls=null;const video=document.getElementById('videoPlayer'),youtubeFrame=document.getElementById('youtubeFrame'),cd=document.getElementById('channelDisplay');
-async function fetchData(){ try{ const r=await fetch('channels_api.php?did='+encodeURIComponent(myDeviceId),{cache:"no-cache"}); const d=await r.json(); if(d.status==="inactive"){ document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#000;color:#fff;padding:20px;text-align:center;"><div style="background:#222;padding:15px;border-radius:10px;margin-bottom:20px;width:100%;max-width:400px;">সফটওয়্যারটি লক করা আছে!</div><h2 style="color:#00ff00;">${myDeviceId}</h2><button onclick="showActivationForm()" style="padding:15px;background:#1565d8;color:#fff;border:none;margin-top:20px;">যোগাযোগ</button></div>`; return; } channels=d.channels; renderList(); if(channels.length>0){ let l=parseInt(localStorage.getItem('last_channel')||0); if(l>=channels.length) l=0; playChannel(l); } }catch(e){console.error("API Connection Error");} }
-function playChannel(i) { currentChannel = i; localStorage.setItem('last_channel', i); const c = channels[i]; if (!c) return; if (c.ad_enabled == 1 && c.ad_url) { showAd(c.ad_url, c.ad_duration || 30, c.ad_size || 90); } const h = document.getElementById('headline'); h.innerText = c.ticker_enabled == 1 ? c.ticker_text : ""; h.style.animation = c.ticker_enabled == 1 ? `scroll-left ${(110 - (c.ticker_speed || 40))}s linear infinite` : 'none'; h.style.direction = (c.ticker_direction === 'right') ? 'rtl' : 'ltr'; const lb = document.getElementById('liveBtn'); lb.innerText = c.live_enabled == 1 ? c.live_text : "LIVE"; lb.style.animation = c.live_enabled == 1 ? (c.live_animation || 'none') + ' 1s infinite' : 'none'; showNameAuto(c.name); const isY=c.url.includes('youtube.com')||c.url.includes('youtu.be'); if(isY){ video.style.display='none';youtubeFrame.style.display='block'; if(window.currentHls)window.currentHls.destroy(); let v=c.url.split('v=')[1]||c.url.split('/').pop(); if(v.includes('?'))v=v.split('?')[0]; youtubeFrame.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0&mute=0"; }else{ youtubeFrame.style.display='none';video.style.display='block'; if(window.currentHls)window.currentHls.destroy(); if(Hls.isSupported()){ window.currentHls=new Hls({lowLatencyMode:true,maxBufferLength:5}); window.currentHls.loadSource(c.url); window.currentHls.attachMedia(video); window.currentHls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{})); }else{ video.src=c.url;video.play().catch(()=>{}); } } }
-function showAd(u, d, s){ const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer'), c=document.getElementById('adContainer'); c.style.width=s+'%'; c.style.height=s+'%'; f.src=u; o.style.display='flex'; let l=d; const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000); }
-function getDeviceId(){let d=localStorage.getItem('unique_device_id');if(!d){d='DEV-'+Date.now()+Math.floor(Math.random()*1000);localStorage.setItem('unique_device_id',d);setDefaultProfile();}return d;} const myDeviceId=getDeviceId(); window.myDeviceId=myDeviceId; function setDefaultProfile(){const d={name:"Default User",fname:"N/A",mname:"N/A",addr:"Not Provided",mobile:"01XXXXXXXXX",email:"user@example.com"};localStorage.setItem('user_profile',JSON.stringify(d));} function showActivationForm(){const s=JSON.parse(localStorage.getItem('user_profile'))||{};const o=document.createElement('div');o.id="formOverlay";o.style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;justify-content:center;align-items:center;padding:20px;";o.innerHTML=`<div style="background:#1a1a1a;padding:20px;border-radius:15px;width:100%;max-width:400px;color:#fff;border:1px solid #444;"><h3 style="text-align:center;margin-bottom:15px;color:#1565d8;">অ্যাক্টিভেশন তথ্য</h3><input type="text" id="name" value="${s.name||''}" placeholder="আপনার নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="fname" value="${s.fname||''}" placeholder="বাবার নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="mname" value="${s.mname||''}" placeholder="মায়ের নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="addr" value="${s.addr||''}" placeholder="ঠিকানা" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="mobile" value="${s.mobile||''}" placeholder="মোবাইল নাম্বার" style="width:100%;padding:10px;margin:5px 0;"><input type="email" id="email" value="${s.email||''}" placeholder="ইমেইল আইডি" style="width:100%;padding:10px;margin:5px 0;"><button id="submitBtn" style="width:100%;padding:12px;background:#25D366;color:#fff;border:none;margin-top:10px;">সাবমিট করুন</button><button onclick="document.getElementById('formOverlay').remove()" style="width:100%;padding:10px;background:red;color:#fff;border:none;margin-top:10px;">বন্ধ করুন</button></div>`;document.body.appendChild(o);document.getElementById('submitBtn').onclick=function(){const p={name:document.getElementById('name').value,fname:document.getElementById('fname').value,mname:document.getElementById('mname').value,addr:document.getElementById('addr').value,mobile:document.getElementById('mobile').value,email:document.getElementById('email').value};localStorage.setItem('user_profile',JSON.stringify(p));const m="নাম: "+p.name+"\nবাবা: "+p.fname+"\nমা: "+p.mname+"\nঠিকানা: "+p.addr+"\nমোবাইল: "+p.mobile+"\nইমেইল: "+p.email+"\nDevice ID: "+myDeviceId;window.location.href="https://wa.me/8801615896688?text="+encodeURIComponent(m);};}
-function showNameAuto(n){cd.innerText=n;cd.style.display='block';setTimeout(()=>{cd.style.display='none';},5000);} function adjustVol(v){video.muted=false;video.volume=Math.min(Math.max(video.volume+v,0),1);document.getElementById('volIndicator').style.display='block';document.getElementById('volIndicator').innerText="VOL: "+Math.round(video.volume*100)+"%";clearTimeout(window.volTimeout);window.volTimeout=setTimeout(()=>{document.getElementById('volIndicator').style.display='none';},1000);} function toggleFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen().catch(()=>{});} function toggleMenu(){document.getElementById('sideMenu').classList.toggle('active');} function nextChannel(){currentChannel=(currentChannel+1)%channels.length;playChannel(currentChannel);} function prevChannel(){currentChannel=(currentChannel-1+channels.length)%channels.length;playChannel(currentChannel);} function renderList(){const l=document.getElementById('channelList');l.innerHTML="";channels.forEach((c,i)=>{const d=document.createElement('div');d.className='channel-item';d.tabIndex=0;d.innerText=c.name;d.onclick=()=>{playChannel(i);toggleMenu();};l.appendChild(d);});} setInterval(()=>{const d=new Date();document.getElementById('clock').innerText=d.toLocaleTimeString('en-US',{timeZone:'Asia/Dhaka',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});document.getElementById('date').innerText=d.toLocaleDateString('en-US',{timeZone:'Asia/Dhaka',weekday:'short',month:'short',day:'2-digit',year:'2-digit'});},1000);window.onload=fetchData;
+function closeProfile(){document.getElementById('profileFrame').style.display='none';}
+function closeSupport(){document.getElementById('supportFrame').style.display='none';}
+function showNameAuto(n){cd.innerText=n;cd.style.display='block';setTimeout(()=>{cd.style.display='none';},5000);}
+function getDeviceId(){let d=localStorage.getItem('unique_device_id');if(!d){d='DEV-'+Date.now()+Math.floor(Math.random()*1000);localStorage.setItem('unique_device_id',d);setDefaultProfile();}return d;}
+const myDeviceId=getDeviceId();window.myDeviceId=myDeviceId;
+function setDefaultProfile(){const d={name:"Default User",fname:"N/A",mname:"N/A",addr:"Not Provided",mobile:"01XXXXXXXXX",email:"user@example.com"};localStorage.setItem('user_profile',JSON.stringify(d));}
+function showActivationForm(){const s=JSON.parse(localStorage.getItem('user_profile'))||{};const o=document.createElement('div');o.id="formOverlay";o.style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;justify-content:center;align-items:center;padding:20px;";o.innerHTML=`<div style="background:#1a1a1a;padding:20px;border-radius:15px;width:100%;max-width:400px;color:#fff;border:1px solid #444;"><h3 style="text-align:center;margin-bottom:15px;color:#1565d8;">অ্যাক্টিভেশন তথ্য</h3><input type="text" id="name" value="${s.name||''}" placeholder="আপনার নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="fname" value="${s.fname||''}" placeholder="বাবার নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="mname" value="${s.mname||''}" placeholder="মায়ের নাম" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="addr" value="${s.addr||''}" placeholder="ঠিকানা" style="width:100%;padding:10px;margin:5px 0;"><input type="text" id="mobile" value="${s.mobile||''}" placeholder="মোবাইল নাম্বার" style="width:100%;padding:10px;margin:5px 0;"><input type="email" id="email" value="${s.email||''}" placeholder="ইমেইল আইডি" style="width:100%;padding:10px;margin:5px 0;"><button id="submitBtn" style="width:100%;padding:12px;background:#25D366;color:#fff;border:none;margin-top:10px;">সাবমিট করুন</button><button onclick="document.getElementById('formOverlay').remove()" style="width:100%;padding:10px;background:red;color:#fff;border:none;margin-top:10px;">বন্ধ করুন</button></div>`;document.body.appendChild(o);document.getElementById('submitBtn').onclick=function(){const p={name:document.getElementById('name').value,fname:document.getElementById('fname').value,mname:document.getElementById('mname').value,addr:document.getElementById('addr').value,mobile:document.getElementById('mobile').value,email:document.getElementById('email').value};localStorage.setItem('user_profile',JSON.stringify(p));const m="নাম: "+p.name+"\nবাবা: "+p.fname+"\nমা: "+p.mname+"\nঠিকানা: "+p.addr+"\nমোবাইল: "+p.mobile+"\nইমেইল: "+p.email+"\nDevice ID: "+myDeviceId;window.location.href="https://wa.me/8801615896688?text="+encodeURIComponent(m);};}
+
+async function fetchData(){
+    try{
+        const r=await fetch('channels_api.php?did='+encodeURIComponent(myDeviceId),{cache:"no-cache"});
+        const d=await r.json();
+        if(d.status==="inactive"){
+            document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#000;color:#fff;padding:20px;text-align:center;"><div style="background:#222;padding:15px;border-radius:10px;margin-bottom:20px;width:100%;max-width:400px;">সফটওয়্যারটি লক করা আছে!</div><h2 style="color:#00ff00;">${myDeviceId}</h2><button onclick="showActivationForm()" style="padding:15px;background:#1565d8;color:#fff;border:none;margin-top:20px;">যোগাযোগ</button></div>`;
+            return;
+        }
+        channels=d.channels;
+        renderList();
+        if(channels.length>0){
+            let l=parseInt(localStorage.getItem('last_channel')||0);
+            if(l>=channels.length) l=0;
+            playChannel(l);
+        }
+    }catch(e){console.error("API Connection Error");}
+}
+
+function playChannel(i) {
+    currentChannel = i;
+    localStorage.setItem('last_channel', i);
+    const c = channels[i];
+    if (!c) return;
+    if (c.ad_enabled == 1 && c.ad_url) {
+        showAd(c.ad_url, c.ad_duration || 30, c.ad_size || 90);
+    }
+    const h = document.getElementById('headline');
+    h.innerText = c.ticker_enabled == 1 ? c.ticker_text : "";
+    h.style.animation = c.ticker_enabled == 1 ? `scroll-left ${(110 - (c.ticker_speed || 40))}s linear infinite` : 'none';
+    h.style.direction = (c.ticker_direction === 'right') ? 'rtl' : 'ltr';
+    const lb = document.getElementById('liveBtn');
+    lb.innerText = c.live_enabled == 1 ? c.live_text : "LIVE";
+    lb.style.animation = c.live_enabled == 1 ? (c.live_animation || 'none') + ' 1s infinite' : 'none';
+    showNameAuto(c.name);
+    const isY=c.url.includes('youtube.com')||c.url.includes('youtu.be');
+    if(isY){
+        video.style.display='none';youtubeFrame.style.display='block';
+        if(window.currentHls)window.currentHls.destroy();
+        let v=c.url.split('v=')[1]||c.url.split('/').pop();
+        if(v.includes('?'))v=v.split('?')[0];
+        youtubeFrame.src="https://www.youtube.com/embed/"+v+"?autoplay=1&rel=0&controls=0&mute=0";
+    }else{
+        youtubeFrame.style.display='none';video.style.display='block';
+        if(window.currentHls)window.currentHls.destroy();
+        if(Hls.isSupported()){
+            window.currentHls=new Hls({lowLatencyMode:true,maxBufferLength:5});
+            window.currentHls.loadSource(c.url);
+            window.currentHls.attachMedia(video);
+            window.currentHls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
+        }else{
+            video.src=c.url;video.play().catch(()=>{});
+        }
+    }
+}
+
+function showAd(u, d, s){
+    const o=document.getElementById('adOverlay'), f=document.getElementById('adFrame'), t=document.getElementById('adTimer'), c=document.getElementById('adContainer');
+    c.style.width = s + '%'; c.style.height = s + '%';
+    f.src = u;
+    o.style.display='flex';
+    let l=d;
+    const i=setInterval(()=>{t.innerText="Ad ends in: "+l+"s";if(l<=0){clearInterval(i);o.style.display='none';f.src="";}l--;},1000);
+}
+
+function adjustVol(v){video.muted=false;video.volume=Math.min(Math.max(video.volume+v,0),1);document.getElementById('volIndicator').style.display='block';document.getElementById('volIndicator').innerText="VOL: "+Math.round(video.volume*100)+"%";clearTimeout(window.volTimeout);window.volTimeout=setTimeout(()=>{document.getElementById('volIndicator').style.display='none';},1000);}
+function toggleFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen().catch(()=>{});}
+function toggleMenu(){document.getElementById('sideMenu').classList.toggle('active');}
+function nextChannel(){currentChannel=(currentChannel+1)%channels.length;playChannel(currentChannel);}
+function prevChannel(){currentChannel=(currentChannel-1+channels.length)%channels.length;playChannel(currentChannel);}
+function renderList(){const l=document.getElementById('channelList');l.innerHTML="";channels.forEach((c,i)=>{const d=document.createElement('div');d.className='channel-item';d.tabIndex=0;d.innerText=c.name;d.onclick=()=>{playChannel(i);toggleMenu();};l.appendChild(d);});}
+setInterval(()=>{const d=new Date();document.getElementById('clock').innerText=d.toLocaleTimeString('en-US',{timeZone:'Asia/Dhaka',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});document.getElementById('date').innerText=d.toLocaleDateString('en-US',{timeZone:'Asia/Dhaka',weekday:'short',month:'short',day:'2-digit',year:'2-digit'});},1000);window.onload=fetchData;
 </script>
 </body>
 </html>
